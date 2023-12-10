@@ -133,3 +133,13 @@ NUM_ISLANDS = 100
 |----------|-------|-------|-----------|---------|-----------|---------|-----------|---------|------------|---------|
 | ISLAND STRATEGY |WHEN TO SWAP|MIGRATION| SCORE     | CALLS | SCORE     | CALLS | SCORE     | CALLS | SCORE      | CALLS |
 | Expert islands    | - | - | 1.0 | 16732.73 |1.0| 19462.13 | 1.0 | 18400.26| 0.996| 16953.56|
+
+MU = 3
+LAMBDA = 10
+COOLDOWN_TIME = 5
+NUM_ISLANDS = 250
+
+|          ||| Problem 1 |         | Problem 2 |         | Problem 5 |         | Problem 10 |         |
+|----------|-------|-------|-----------|---------|-----------|---------|-----------|---------|------------|---------|
+| ISLAND STRATEGY |WHEN TO SWAP|MIGRATION| SCORE     | CALLS | SCORE     | CALLS | SCORE     | CALLS | SCORE      | CALLS |
+| Expert islands    | - | - | 1.0 | 2490.06 |1.0| 2564.86 | 1.0 | 2536.93 | 1.0 | 2514.9 |
