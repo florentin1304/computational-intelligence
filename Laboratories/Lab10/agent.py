@@ -1,10 +1,29 @@
 import numpy as np
 from collections import defaultdict
+import pandas as pd
+import csv
+
 
 class QTable(defaultdict):
     def __missing__(self, key):
         self[key] = self.default_factory(key) 
         return self[key] 
+
+    def save_csv(self, path):
+        content = []
+        for k,v in self.items():
+            row = [k] + v.tolist() 
+            content.append(row)
+
+        with open(path, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(content)
+
+    def load_csv(self, path):
+        df = pd.read_csv(path, header=None, dtype=str)
+        for i in range(len(df)):
+            row = df.iloc[i]
+            self[row[0]] = np.array(row[1:], dtype=float)
 
 class TicTacToeAgent:
     def __init__(self, num_of_actions, gamma=0.98,
@@ -13,7 +32,7 @@ class TicTacToeAgent:
         self.epsilon_decay_param = int((epsilon_min/(1-epsilon_min)) * (epsilon_min_episode_reached))
         self.epsilon_min = epsilon_min
 
-        self.test = False
+        self.istest = False
         self.gamma = gamma
         self.lr = lr
         self.num_of_actions = num_of_actions
@@ -40,7 +59,7 @@ class TicTacToeAgent:
         encoded_state = self.encode_state(state)
         state_q = self.q_table[ encoded_state ]
 
-        if self.test or not (np.random.rand() < self.epsilon): # TEST or Rand > epsilon
+        if self.istest or not (np.random.rand() < self.epsilon): # TEST or Rand > epsilon
             best_action_estimated = np.argmax(state_q)  # TODO: greedy w.r.t. q_grid
             return best_action_estimated
 
@@ -60,7 +79,7 @@ class TicTacToeAgent:
         self.epsilon = max(self.epsilon_decay_param / (self.epsilon_decay_param + episode), self.epsilon_min)
 
     def train(self):
-        self.test = False
+        self.istest = False
 
     def test(self):
-        self.test = True
+        self.istest = True

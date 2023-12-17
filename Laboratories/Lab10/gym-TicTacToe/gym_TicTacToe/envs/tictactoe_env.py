@@ -3,6 +3,7 @@ import numpy as np
 import math
 from copy import deepcopy
 from tabulate import tabulate
+from itertools import combinations
 
 from typing import Tuple, List
 
@@ -30,14 +31,21 @@ class TicTacToeEnv(gym.Env):
         self.enemy_agent = 'random'
         self.reset()
 
-    def reset(self) -> Tuple[np.ndarray, dict]:
+    def reset(self, adversary_first=False) -> Tuple[np.ndarray, dict]:
         """
         reset the board game and state
         """
+
         self.state: np.ndarray = np.zeros(
             (self.fields_per_side, self.fields_per_side), dtype=int
         )
+
         self.info = {"players": {1: {"actions": []}, 2: {"actions": []}}}
+
+        self.turn = 0
+        if adversary_first:
+            self._adversary_move()
+        
         return self.state.flatten(), self.info
 
     def step(self, user_action: Tuple[int, int]) -> Tuple[np.ndarray, int, bool, dict]:
@@ -55,52 +63,52 @@ class TicTacToeEnv(gym.Env):
           (dict): empty dict for futur game related information
         """
         # unpack the input Tuple into action and color
-        action, color = user_action
+        action = user_action
+        my_color = 1 + self.turn
 
         if not self.action_space.contains(action):
             raise ValueError(f"action '{action}' is not in action_space")
 
-        if not color in self.colors:
-            raise ValueError(f"color '{color}' is not an allowed color")
+        if not my_color in self.colors:
+            raise ValueError(f"color '{my_color}' is not an allowed color")
 
         reward = self.small  # assign (negative) reward for every move done
         (row, col) = self.decode_action(action)
 
         if self.state[row, col] != 0:        
-            self.info["players"][color]["actions"].append(action)
+            self.info["players"][my_color]["actions"].append(action)
             return self.state, -self.large, True, self.info
 
-        self.state[row, col] = color  # postion the token on the field
-        self.info["players"][color]["actions"].append(action)
+        self.state[row, col] = my_color  # postion the token on the field
+        self.info["players"][my_color]["actions"].append(action)
 
-        if self._is_winner(color):
+        if self._is_winner(my_color):
             done = True
             reward += self.large
-            return deepcopy(self.state), reward, done, self.info
+            return self.state.copy(), reward, done, self.info
         
         elif self._is_draw():
             done = True
-            return deepcopy(self.state), reward, done, self.info
+            return self.state.copy(), reward, done, self.info
         
         elif self.enemy_agent == 'random':
-                # print("Go to enemy")
-                flatten_state = np.array(self.state).flatten()
-                available_plays = [i for i in range(len(flatten_state)) if flatten_state[i] == 0]
-                random_play = np.random.choice(available_plays)
-                row, col = self.decode_action(random_play)
-                self.state[row, col] = 2 # other_player(color)
-                self.info["players"][2]["actions"].append(action)
+            # Change turn to enemy
+            self.turn = 1 - self.turn
+            enemy_color = 1 + self.turn
+            self._adversary_move() # changes turn internally
+
+            
+            
+            if self._is_winner(enemy_color):
+                done = True
+                reward -= self.large
+                return self.state.copy(), reward, done, self.info
+            elif self._is_draw():
                 
-                if self._is_winner(2):
-                    done = True
-                    reward -= self.large
-                    return deepcopy(self.state), reward, done, self.info
-                elif self._is_draw():
-                    
-                    done = True
-                    return deepcopy(self.state), reward, done, self.info
-                else:
-                    return deepcopy(self.state), reward, False, self.info
+                done = True
+                return self.state.copy(), reward, done, self.info
+            else:
+                return self.state.copy(), reward, False, self.info
         
 
                 # self.info["players"][color]["actions"].append(action)
@@ -108,7 +116,20 @@ class TicTacToeEnv(gym.Env):
             # if not done and self._is_draw():
             #     return self.state, reward, True, self.info
             
+    def _adversary_move(self):
+        if self.enemy_agent == 'random':
+            flatten_state = np.array(self.state).flatten()
+            available_plays = [i for i in range(len(flatten_state)) if flatten_state[i] == 0]
+            random_play = np.random.choice(available_plays)
+            row, col = self.decode_action(random_play)
+            self.state[row, col] = 1 + self.turn # = color
 
+            enemy_color = 1 + self.turn
+            self.info["players"][enemy_color]["actions"].append(random_play)
+        else:
+            raise Exception(f"Adversary {self.enemy_agent} not known")
+
+        self.turn = 1 - self.turn
 
     def _is_draw(self):
         return np.sum( self.state == 0 ) == 0
@@ -122,23 +143,15 @@ class TicTacToeEnv(gym.Env):
         Returns:
             bool: indicating if there is a winner
         """
-        done = False
-        bool_matrix = self.state == color
-        for ii in range(3):
-            # check if three equal coins are aligned (horizontal, verical or diagonal)
-            if (
-                # check columns
-                np.sum(bool_matrix[:, ii]) == 3
-                # check rows
-                or np.sum(bool_matrix[ii, :]) == 3
-                # check diagonal
-                or np.sum([bool_matrix[ii, ii]]) == 3
-                or np.sum([bool_matrix[0, 2], bool_matrix[1, 1], bool_matrix[2, 0]])
-                == 3
-            ):
-                done = True
-                break
-        return done
+        magic_square = np.array(
+            [[2,7,6],
+             [9,5,1],
+             [4,3,8]]
+        ).flatten()
+
+        elements = [magic_square[i] for i in range(len(self.state.flatten())) if self.state.flatten()[i] == color]
+
+        return any(sum(c) == 15 for c in combinations(elements, 3))
 
     def decode_action(self, action: int) -> List[int]:
         """decode the action integer into a colum and row value
