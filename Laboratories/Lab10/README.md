@@ -7,7 +7,7 @@ The approach taken was to train an agent via Q-learning. This problem is feasibl
 
 The agent is not modelled in order to know about available moves, so during training he will learn which moves are valid and which are not. Though it has a bias towards invalid moves: each time a new state is discovered, a new entry is created in the Q-table and a new score is added for each move, but it will be created as follows:
 
-$Q_0(s,a) = 0 \; \text{if} \; a \; \text{is valid else} \;-10 $
+$Q_0(s,a) = 0 \text{ if } a \text{ is valid else }-10 $
 
 
 ## Training procedure
