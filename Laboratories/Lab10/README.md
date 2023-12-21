@@ -62,7 +62,7 @@ The results are summarised in the following table:
 | Random player                   | True                         |  91.13 |   0.72   |  8.15   |   0.0                  |
 | Magic Square                    | False                        |  83.27 |   0.0    |  16.73  |   0.0                  |
 | Magic Square                    | True                         |  5.91  |   0.0    |  94.04  |   0.0                  |
-| Agent Trained only vs random*   | False                        | 100.0    | 0.0      | 100.0   |   0.0                  |
+| Agent Trained only vs random*   | False                        | 100.0  | 0.0      | 0.0     |   0.0                  |
 | Agent Trained only vs random*   | True                         | 0.0    | 0.0      | 100.0   |   0.0                  |
 | Agent Trained vs both*          | False                        | 0.0    | 0.0      | 100.0   |   0.0                  |
 | Agent Trained vs both*          | True                         | 0.0    | 0.0      | 100.0   |   0.0                  |
