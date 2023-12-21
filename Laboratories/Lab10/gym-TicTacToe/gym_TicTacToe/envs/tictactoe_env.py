@@ -4,6 +4,8 @@ import math
 from copy import deepcopy
 from tabulate import tabulate
 from itertools import combinations
+ 
+import agent # im sure I deserve a place in hell for this
 
 from typing import Tuple, List
 
@@ -31,7 +33,7 @@ class TicTacToeEnv(gym.Env):
         self.enemy_agent = 'random'
         self.reset()
 
-    def reset(self, adversary_first=False) -> Tuple[np.ndarray, dict]:
+    def reset(self, adversary_first=False, enemy_agent="random", file=None) -> Tuple[np.ndarray, dict]:
         """
         reset the board game and state
         """
@@ -43,6 +45,14 @@ class TicTacToeEnv(gym.Env):
         self.info = {"players": {1: {"actions": []}, 2: {"actions": []}}}
 
         self.turn = 0
+        self.enemy_agent = enemy_agent
+        if enemy_agent == 'trained':
+            if file is None:
+                raise Exception(f"If {enemy_agent=} you need to provide a training file path.")
+            self.trained_agent = agent.TicTacToeAgent(num_of_actions=self.action_space.n)
+            self.trained_agent.q_table.load_csv(file)
+            self.trained_agent.test()
+
         if adversary_first:
             self._adversary_move()
         
@@ -77,6 +87,7 @@ class TicTacToeEnv(gym.Env):
 
         if self.state[row, col] != 0:        
             self.info["players"][my_color]["actions"].append(action)
+            self.info["ending"] = "illegal"
             return self.state, -self.large, True, self.info
 
         self.state[row, col] = my_color  # postion the token on the field
@@ -85,51 +96,104 @@ class TicTacToeEnv(gym.Env):
         if self._is_winner(my_color):
             done = True
             reward += self.large
+            self.info["ending"] = "win"
             return self.state.copy(), reward, done, self.info
         
         elif self._is_draw():
             done = True
+            self.info["ending"] = "draw"
             return self.state.copy(), reward, done, self.info
         
-        elif self.enemy_agent == 'random':
+        elif self.enemy_agent is not None:
             # Change turn to enemy
             self.turn = 1 - self.turn
             enemy_color = 1 + self.turn
             self._adversary_move() # changes turn internally
-
-            
             
             if self._is_winner(enemy_color):
                 done = True
                 reward -= self.large
+                self.info["ending"] = "lose"
                 return self.state.copy(), reward, done, self.info
             elif self._is_draw():
-                
                 done = True
+                self.info["ending"] = "draw"
                 return self.state.copy(), reward, done, self.info
             else:
                 return self.state.copy(), reward, False, self.info
         
-
-                # self.info["players"][color]["actions"].append(action)
-
-            # if not done and self._is_draw():
-            #     return self.state, reward, True, self.info
+        
+        return self.state.copy(), reward, done, self.info
             
     def _adversary_move(self):
         if self.enemy_agent == 'random':
-            flatten_state = np.array(self.state).flatten()
-            available_plays = [i for i in range(len(flatten_state)) if flatten_state[i] == 0]
-            random_play = np.random.choice(available_plays)
-            row, col = self.decode_action(random_play)
-            self.state[row, col] = 1 + self.turn # = color
+            play = self._random_opponent()
+            row, col = self.decode_action(play)
 
-            enemy_color = 1 + self.turn
-            self.info["players"][enemy_color]["actions"].append(random_play)
+        elif self.enemy_agent == "magic_square":
+            play = self._magic_square_opponent()
+            row, col = self.decode_action(play)
+
+        elif self.enemy_agent == "trained":
+            play = self._trained_agent_opponent()
+            row, col = self.decode_action(play)
+            
         else:
             raise Exception(f"Adversary {self.enemy_agent} not known")
 
+        self.state[row, col] = 1 + self.turn # = color
+        enemy_color = 1 + self.turn
+        self.info["players"][enemy_color]["actions"].append(play)
         self.turn = 1 - self.turn
+
+    def _random_opponent(self):
+        flatten_state = np.array(self.state).flatten()
+        available_plays = [i for i in range(len(flatten_state)) if flatten_state[i] == 0]
+        random_play = np.random.choice(available_plays)
+        return random_play
+        
+    def _magic_square_opponent(self):        
+        magic_square = np.array([[2,7,6],
+                                 [9,5,1],
+                                 [4,3,8]]).flatten()
+        
+        flatten_state = np.array(self.state).flatten()
+
+        magic_square_agent_mask = (flatten_state == 1 + self.turn)
+        opponent_mask = (flatten_state == 1 + (1-self.turn))
+
+
+        # If two (magic opponent) moves were done
+        if (np.sum(magic_square_agent_mask)>=2):
+            couples = combinations(magic_square[magic_square_agent_mask], 2)
+            for couple in couples:
+                new_place = 15 - np.sum(couple)
+                if 0 < new_place <= 9:
+                    if flatten_state[magic_square == new_place][0] == 0:
+                        action = np.where(magic_square == new_place)[0][0]
+                        # print("CONTRAST")
+                        return action
+
+        # If two player moves were done
+        if (np.sum(opponent_mask)>=2):
+            couples = combinations(magic_square[opponent_mask], 2)
+            for couple in couples:
+                new_place = 15 - np.sum(couple)
+                if 0 < new_place <= 9:
+                    if flatten_state[magic_square == new_place][0] == 0:
+                        action = np.where(magic_square == new_place)[0][0]
+                        # print("WIN")
+                        return action
+
+        # If center is 
+        if flatten_state[4] == 0:
+            action = 4
+        else:
+            action = np.random.choice(np.where(flatten_state==0)[0])
+        return action
+    
+    def _trained_agent_opponent(self):
+        return self.trained_agent.get_action(self.state)
 
     def _is_draw(self):
         return np.sum( self.state == 0 ) == 0
