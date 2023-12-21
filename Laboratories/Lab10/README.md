@@ -35,7 +35,7 @@ Where b is a constant that depends on the minimum $\epsilon_{min}$ desired and t
 $$ b = { \epsilon_{min} \over (1 - \epsilon_{min})} ep_n^* $$
 
 
-In this case $ep_n^*$ was choosen to be the last episode of the training, so $ep_n^* = 1'000'000$.
+In this case $ep_n^\*$ was choosen to be the last episode of the training, so $ep_n^\* = 1'000'000$.
 
 ## Training results
 <p float="left">
