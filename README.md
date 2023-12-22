@@ -20,7 +20,8 @@ Regarding the Labs Hope you enjoy the contents as much as we did while creating 
 | Lab 9 post deadline edits | More experiments and in depth analysis done after the deadline with the intent of gathering more data for the class presentation                                                         | [Link to Lab 9 (after&nbsp;deadline)](https://github.com/florentin1304/computational-intelligence/tree/main/Laboratories/Lab9_after_deadline) |
 | Lab 9 class presentation  | During the lecture of 11/12/2023 I presented the work done for Lab9 (along with my two other colleagues)                              |         -          |
 | Lab 9 reviews             | Reviews two of my peers one-max problem solutions.                                                                                                 |[Riccardo&nbsp;Cardona](https://github.com/Riden15/Computational-Intelligence/issues/5) and [Simone&nbsp;Borella](https://github.com/SimoneBorella/computational-intelligence/issues/6)|
-
+| Lab 10 on time delivery   | The objective of this laboratory was to create a TicTacToe player agent using some reinforcement learning algorithm. The Q-Learning algorithm was used. The training was done both against a random player (ensuring exploration from the opponent side) and an informed player, that always played the optimal move if possible (using a magic square heuristic). The agent was then tested against these two and other versions of the same trained agent. | [Link to Lab 10](https://github.com/florentin1304/computational-intelligence/tree/main/Laboratories/Lab10) |
+| Lab 10 reviews             | Reviews two of my peers TicTacToe RL-agentt solutions.                                                                                                 | _ and _ |
 
 
 
