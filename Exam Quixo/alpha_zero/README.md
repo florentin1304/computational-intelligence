@@ -40,7 +40,7 @@ $` UCB(i) = \frac{Q(i)}{N(i)} + c \times P_{\text{prior}}(i|s) \times \sqrt{\fra
 This formula combines traditional UCB terms with the prior probability term from the neural network. The \( P_{\text{prior}}(i|s) \) term encourages the selection of actions that are initially deemed more promising by the neural network, contributing to the exploration aspect. The trade-off between exploration and exploitation is controlled by the parameter 'c', allowing the algorithm to adapt its search strategy based on the specific characteristics of the problem at hand.
 
 #### Practical Application in Quixo
-In your Quixo game project, AlphaZero uses its neural network to evaluate board positions and potential moves. MCTS explores these moves, simulating various game scenarios. The results of these simulations are used to train the neural network, improving its move predictions and game evaluations over time. This integration enables the AlphaZero agent in your Quixo game to become an increasingly challenging opponent, capable of high-level strategic play.
+In the Quixo game project, AlphaZero uses its neural network to evaluate board positions and potential moves. MCTS explores these moves, simulating various game scenarios. The results of these simulations are used to train the neural network, improving its move predictions and game evaluations over time. This integration enables the AlphaZero agent in the Quixo game to become an increasingly challenging opponent, capable of high-level strategic play.
 
 
 
